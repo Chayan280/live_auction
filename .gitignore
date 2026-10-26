@@ -1,9 +1,22 @@
+
+# Python virtual environment and cache
 .venv/
-__pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+
+# Environment secrets
 .env
+.env.*
+!.env.example
+
+# Local databases
 *.db
+*.sqlite3
+
+# Frontend generated files
 frontend/node_modules/
 frontend/dist/
+
+# Uploaded photos and generated cache
 backend/uploads/*
 !backend/uploads/.gitkeep
