@@ -1,0 +1,27 @@
+/* player card popup */
+.player-mini.clickable { cursor: pointer; transition: transform .15s, border-color .15s; }
+.player-mini.clickable:hover { transform: translateY(-2px); border-color: #34d399; }
+.card-modal { position: fixed; inset: 0; z-index: 60; background: rgba(2, 6, 12, .85); display: grid; place-items: center; padding: 16px; overflow: auto; }
+.card-modal-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 96vw; }
+.card-modal-main { display: flex; gap: 16px; align-items: stretch; }
+.card-preview { display: block; height: min(76vh, 650px); width: auto; max-width: 100%; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.bid-panel { width: 330px; height: min(76vh, 650px); background: #111827; border: 1px solid #263043; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; overflow: hidden; }
+.bid-panel h3 { margin: 0 0 4px; color: #fbbf24; font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; }
+.bid-panel p { margin: 0 0 12px; font-size: .8rem; }
+.bid-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; scrollbar-width: thin; }
+.bid-row { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; background: #151e2e; border: 1px solid #1f2a3d; border-radius: 12px; padding: 9px 11px; }
+.bid-row.win { background: rgba(245, 158, 11, .16); border-color: #f59e0b; }
+.bid-row b { display: block; font-size: .85rem; }
+.bid-row small { color: #6b7280; font-size: .7rem; }
+.bid-row strong { color: #34d399; font-size: .95rem; }
+.bid-row.win strong { color: #fbbf24; }
+.bid-n { width: 28px; height: 28px; border-radius: 50%; background: #263043; color: #9ca3af; display: grid; place-items: center; font-size: .75rem; font-weight: 800; }
+.bid-row.win .bid-n { background: #f59e0b; color: #111827; }
+.card-check { color: #d1d5db; font-size: .85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.card-modal-actions { display: flex; gap: 10px; }
+.card-modal-close { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%; background: rgba(17, 24, 39, .9); color: #fff; font-size: 1.3rem; border: 1px solid #374151; z-index: 2; }
+@media (max-width: 900px) {
+  .card-modal-main { flex-direction: column; align-items: center; }
+  .card-preview { height: auto; width: min(92vw, 520px); }
+  .bid-panel { width: min(92vw, 520px); height: auto; max-height: 40vh; }
+}
