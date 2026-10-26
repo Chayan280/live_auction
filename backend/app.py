@@ -93,9 +93,15 @@ def init_db():
         status TEXT DEFAULT 'PENDING',
         sold_to TEXT DEFAULT NULL,
         sold_price REAL DEFAULT 0,
+        sold_at DATETIME DEFAULT NULL,
         round_no INTEGER DEFAULT 1
     )''')
     
+    # Safe migration for databases created before sold_at was added.
+    player_columns = {row[1] for row in c.execute("PRAGMA table_info(players)").fetchall()}
+    if 'sold_at' not in player_columns:
+        c.execute("ALTER TABLE players ADD COLUMN sold_at DATETIME DEFAULT NULL")
+
     c.execute('''CREATE TABLE IF NOT EXISTS teams (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT UNIQUE,
@@ -222,7 +228,15 @@ def get_players():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM players ORDER BY id ASC")
+    c.execute("""
+        SELECT p.*,
+               COALESCE(
+                   p.sold_at,
+                   (SELECT MAX(b.timestamp) FROM bids_history b WHERE b.player_id = p.id)
+               ) AS sold_at
+        FROM players p
+        ORDER BY p.id ASC
+    """)
     players = [dict(row) for row in c.fetchall()]
     for player in players:
         player['reg_no'] = format_reg_no(player['reg_no'])
@@ -306,7 +320,7 @@ def sell_player():
         if team[0] < sold_price:
             conn.close()
             return jsonify({'error': f'{sold_to} does not have enough purse.'}), 400
-        c.execute("UPDATE players SET status='SOLD', sold_to=?, sold_price=? WHERE id=? AND status='PENDING'", (sold_to, sold_price, player_id))
+        c.execute("UPDATE players SET status='SOLD', sold_to=?, sold_price=?, sold_at=CURRENT_TIMESTAMP WHERE id=? AND status='PENDING'", (sold_to, sold_price, player_id))
         if c.rowcount == 0:
             conn.close()
             return jsonify({'error': 'Player was already finalized.'}), 409

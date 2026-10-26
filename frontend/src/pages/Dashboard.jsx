@@ -11,6 +11,7 @@ export function Dashboard() {
   const [teams, setTeams] = useState([]);
   const [players, setPlayers] = useState([]);
   const [filter, setFilter] = useState('ALL');
+  const [soldSort, setSoldSort] = useState('LATEST');
   const [error, setError] = useState('');
   const [cardPlayer, setCardPlayer] = useState(null);
 
@@ -31,7 +32,15 @@ export function Dashboard() {
 
   const sold = players
     .filter((p) => p.status === 'SOLD' && (filter === 'ALL' || p.sold_to === filter))
-    .sort((a, b) => Number(b.sold_price) - Number(a.sold_price));
+    .sort((a, b) => {
+      if (soldSort === 'PRICE_DESC') return Number(b.sold_price) - Number(a.sold_price);
+      if (soldSort === 'PRICE_ASC') return Number(a.sold_price) - Number(b.sold_price);
+      const timeA = a.sold_at ? Date.parse(a.sold_at) : 0;
+      const timeB = b.sold_at ? Date.parse(b.sold_at) : 0;
+      if (soldSort === 'OLDEST') return (timeA || Number(a.id)) - (timeB || Number(b.id));
+      // Latest sold first. For older records without a sold timestamp, higher IDs are the best available fallback.
+      return (timeB || Number(b.id)) - (timeA || Number(a.id));
+    });
 
   return (
     <Shell
@@ -58,21 +67,29 @@ export function Dashboard() {
         title="Sold Players List (High to Low)"
         accent="green"
         toolbar={(
-          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="ALL">All Teams</option>
-            {teams.map((t) => <option key={t.id}>{t.name}</option>)}
-          </select>
+          <div className="section-filters">
+            <select aria-label="Filter sold players by team" value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="ALL">All Teams</option>
+              {teams.map((t) => <option key={t.id}>{t.name}</option>)}
+            </select>
+            <select aria-label="Sort sold players" value={soldSort} onChange={(e) => setSoldSort(e.target.value)}>
+              <option value="LATEST">Recently Sold First</option>
+              <option value="OLDEST">First Sold First</option>
+              <option value="PRICE_DESC">Highest Price First</option>
+              <option value="PRICE_ASC">Lowest Price First</option>
+            </select>
+          </div>
         )}
       >
-        <PlayerGrid players={sold} sold onSelect={setCardPlayer} />
+        <PlayerGrid players={sold} sold horizontal onSelect={setCardPlayer} />
       </Section>
 
       <Section title="Unsold Players (Waiting for Next Round)" accent="red">
-        <PlayerGrid players={players.filter((p) => p.status === 'UNSOLD')} empty="No unsold players yet." />
+        <PlayerGrid players={players.filter((p) => p.status === 'UNSOLD')} horizontal empty="No unsold players yet." />
       </Section>
 
       <Section title="Yet To Be Auctioned">
-        <PlayerGrid players={players.filter((p) => p.status === 'PENDING')} pending empty="All players have been through the auction." />
+        <PlayerGrid players={players.filter((p) => p.status === 'PENDING')} pending horizontal empty="All players have been through the auction." />
       </Section>
     </Shell>
   );
